@@ -57,7 +57,11 @@ jobs:
           kotlin {
               jvmToolchain(17)
           }
-          EOF
+                    EOF
+
+      - name: Fix Android imports
+        run: |
+          sed -i '/import android.app.AppOpsManager/a import android.app.AlertDialog' app/src/main/java/com/scrollcheck/app/MainActivity.kt
 
       - name: Build APK
         run: gradle assembleDebug --no-daemon
