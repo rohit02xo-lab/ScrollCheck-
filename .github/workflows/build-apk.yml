@@ -11,13 +11,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract Android project
+      - name: Extract project
         run: |
           unzip -q ScrollCheckAndroid-CloudBuild.zip -d extracted
           cp -r extracted/ScrollCheckAndroid/. ./
           rm -rf extracted
 
-      - name: Set up Java 17
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -28,24 +28,24 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Force Java 17
+      - name: Fix Java and Kotlin targets
         run: |
           cat > java17.gradle <<'EOF'
           allprojects {
               tasks.withType(JavaCompile).configureEach {
                   sourceCompatibility = "17"
                   targetCompatibility = "17"
-                  options.release = 17
+              }
+
+              tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                  kotlinOptions.jvmTarget = "17"
               }
           }
           EOF
 
       - name: Build APK
         run: |
-          gradle \
-            --init-script java17.gradle \
-            assembleDebug \
-            --no-daemon
+          gradle --init-script java17.gradle assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
